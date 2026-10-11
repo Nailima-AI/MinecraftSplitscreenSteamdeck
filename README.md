@@ -4,6 +4,10 @@
 > [TESTING.md](TESTING.md) for installation, known limitations and debug collection.
 > No real Minecraft/compositor/controller testing has been performed for this revision.
 
+## AI-generated code disclaimer
+
+Changes introduced in this fork were generated and modified with AI assistance (OpenAI Codex). They received static review and syntax checks, but have not been validated through real Minecraft, compositor or controller testing. Review the code and follow [TESTING.md](TESTING.md) before relying on this experimental build. This notice applies to this fork's changes, not to the original upstream project's authorship.
+
 Development fork: [Nailima-AI/MinecraftSplitscreenSteamdeck](https://github.com/Nailima-AI/MinecraftSplitscreenSteamdeck).
 Download or clone the complete repository; the experimental installer requires its bundled modules.
 CurseForge-backed mods require your own API key. The installer prompts with hidden
