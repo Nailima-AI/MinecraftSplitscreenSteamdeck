@@ -1,2 +1,5 @@
 __pycache__/
+.env
+.env.*
+token.enc
 **/__pycache__/
