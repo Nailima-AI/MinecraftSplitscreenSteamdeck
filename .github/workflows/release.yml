@@ -16,10 +16,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Upload installer script as release asset
+      - name: Package complete source archive
+        run: git archive --format=zip --prefix=minecraft-splitscreen-bazzite-gnome/ --output=minecraft-splitscreen-prism-bazzite-gnome.zip HEAD
+
+      - name: Upload complete source archive as release asset
         uses: softprops/action-gh-release@v2
         with:
-          files: install-minecraft-splitscreen.sh
+          files: minecraft-splitscreen-prism-bazzite-gnome.zip
           generate_release_notes: true
           overwrite: true
         env:
