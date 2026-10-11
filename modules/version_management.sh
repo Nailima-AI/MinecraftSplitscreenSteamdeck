@@ -203,28 +203,7 @@ check_mod_version_compatibility() {
         
     elif [[ "$platform" == "curseforge" ]]; then
         # Check CurseForge mod for version compatibility using same logic as check_curseforge_mod
-        # First get the encrypted API token
-        local token_url="https://raw.githubusercontent.com/FlyingEwok/MinecraftSplitscreenSteamdeck/main/token.enc"
-        local encrypted_token_file=$(mktemp)
-        
-        if command -v curl >/dev/null 2>&1; then
-            curl -s -L -o "$encrypted_token_file" "$token_url" 2>/dev/null
-        elif command -v wget >/dev/null 2>&1; then
-            wget -q -O "$encrypted_token_file" "$token_url" 2>/dev/null
-        else
-            rm -f "$encrypted_token_file"
-            return 1
-        fi
-        
-        # Decrypt the API token
-        local fixed_passphrase="MinecraftSplitscreenSteamDeck2025"
-        local cf_api_key
-        cf_api_key=$(openssl enc -aes-256-cbc -d -a -pbkdf2 -pass pass:"$fixed_passphrase" -in "$encrypted_token_file" 2>/dev/null)
-        rm -f "$encrypted_token_file"
-        
-        if [[ -z "$cf_api_key" ]]; then
-            return 1  # Can't get API key
-        fi
+        local cf_api_key="${MSS_CURSEFORGE_API_KEY:-}",        [[ -n "$cf_api_key" ]] || return 1
         
         # Query CurseForge API with Fabric loader filter
         local cf_api_url="https://api.curseforge.com/v1/mods/$mod_id/files?modLoaderType=4"

@@ -16,7 +16,7 @@
 #
 # INSTALLATION WORKFLOW:
 # 1. WORKSPACE SETUP: Create directories and initialize environment
-# 2. CORE SETUP: Java detection and PolyMC download
+# 2. CORE SETUP: Java detection and PrismLauncher download
 # 3. VERSION DETECTION: Minecraft and Fabric version determination
 # 4. ACCOUNT SETUP: Download offline splitscreen player accounts
 # 5. MOD COMPATIBILITY: Query APIs and determine compatible mod versions
@@ -32,7 +32,7 @@
 # - Multiple validation checkpoints ensure data integrity
 #
 # LAUNCHER APPROACH:
-# The script uses PolyMC as the primary launcher for day-to-day splitscreen gameplay.
+# The script uses PrismLauncher as the primary launcher for day-to-day splitscreen gameplay.
 main() {
     # Support direct module testing calls with --debug.
     local arg
@@ -43,9 +43,25 @@ main() {
     done
 
     print_header "🎮 MINECRAFT SPLITSCREEN INSTALLER 🎮"
-    print_info "PolyMC launcher setup with manual instance creation"
+    print_info "PrismLauncher launcher setup with manual instance creation"
     print_debug "Debug logging enabled"
     echo ""
+    # Controllable is a required CurseForge mod. Never fetch shared credentials.
+    if [[ -z "${MSS_CURSEFORGE_API_KEY:-}" ]]; then
+        if [[ -t 0 ]]; then
+            read -r -s -p "Your CurseForge API key (input hidden): " MSS_CURSEFORGE_API_KEY || return 1
+            printf '\n'
+        else
+            print_error "Set MSS_CURSEFORGE_API_KEY before installing; required CurseForge mods need your own API key."
+            return 1
+        fi
+    fi
+    if [[ -z "${MSS_CURSEFORGE_API_KEY:-}" ]]; then
+        print_error "A CurseForge API key is required. No shared token is bundled."
+        return 1
+    fi
+    # API functions use the shell variable; do not pass it to unrelated children.
+    export -n MSS_CURSEFORGE_API_KEY
     
     # =============================================================================
     # WORKSPACE INITIALIZATION PHASE
@@ -63,7 +79,7 @@ main() {
     # CORE SYSTEM REQUIREMENTS VALIDATION
     # =============================================================================
     
-    download_prism_launcher        # Download PolyMC AppImage for splitscreen launcher usage
+    download_prism_launcher        # Download PrismLauncher AppImage for splitscreen launcher usage
     
     # =============================================================================
     # VERSION DETECTION AND CONFIGURATION
@@ -71,7 +87,7 @@ main() {
     
     get_minecraft_version         # Determine target Minecraft version (user choice or latest)
     detect_java                   # Automatically detect, install, and configure correct Java version for selected Minecraft version
-    configure_polymc_defaults     # Write launcher defaults so Quick Setup wizard is skipped
+    configure_prismlauncher_defaults     # Write launcher defaults so Quick Setup wizard is skipped
     get_fabric_version           # Get compatible Fabric loader version from API
     get_lwjgl_version            # Detect appropriate LWJGL version for Minecraft version
     
@@ -85,16 +101,14 @@ main() {
     # OFFLINE ACCOUNTS DOWNLOAD: Get splitscreen player account configurations
     # These accounts enable splitscreen without requiring multiple Microsoft accounts
     # Each player (P1, P2, P3, P4) gets a separate offline profile for identification
-    if ! wget -O accounts.json "https://raw.githubusercontent.com/FlyingEwok/MinecraftSplitscreenSteamdeck/main/accounts.json"; then
-        print_warning "⚠️  Failed to download accounts.json from repository"
-        print_info "   → Attempting to use local copy if available..."
-        if [[ ! -f "accounts.json" ]]; then
-            print_error "❌ No accounts.json found - splitscreen accounts may require manual setup"
-            print_info "   → Splitscreen will still work but players may have generic names"
-        fi
+    if [[ -s accounts.json ]]; then
+        print_info "Preserving existing account configuration."
+    elif [[ -s "${SCRIPT_DIR}/accounts.json" ]]; then
+        cp -- "${SCRIPT_DIR}/accounts.json" accounts.json
+        chmod 600 accounts.json
     else
-        print_success "✅ Offline splitscreen accounts configured successfully"
-        print_debug "P1, P2, P3, P4 player accounts ready for offline gameplay"
+        print_error "No bundled accounts.json. Extract the complete archive before installing."
+        return 1
     fi
     
     # =============================================================================
@@ -150,7 +164,7 @@ main() {
     # =============================================================================
     
     echo "✅ Installation successful"
-    echo "Launcher: PolyMC"
+    echo "Launcher: PrismLauncher"
     echo "Instances: 4 (latestUpdate-1 to latestUpdate-4)"
     echo ""
     echo "Run: $TARGET_DIR/minecraftSplitscreen.sh"
@@ -159,7 +173,7 @@ main() {
         echo ""
         echo "Debug details"
         echo "- Installation dir: $TARGET_DIR"
-        echo "- Launcher executable: $TARGET_DIR/PolyMC.AppImage"
+        echo "- Launcher executable: $TARGET_DIR/PrismLauncher.AppImage"
         echo "- Instances dir: $TARGET_DIR/instances/"
         echo "- Accounts file: $TARGET_DIR/accounts.json"
     fi

@@ -41,7 +41,7 @@ create_instances() {
     # Ensure instances directory exists
     mkdir -p "$TARGET_DIR/instances"
     
-    # Check if we're updating existing PolyMC instances.
+    # Check if we're updating existing PrismLauncher instances.
     local existing_instances=0
     local instances_dir="$TARGET_DIR/instances"
     
@@ -83,7 +83,7 @@ create_instances() {
         print_progress "Creating Minecraft $MC_VERSION instance with Fabric..."
         local instance_dir="$TARGET_DIR/instances/$instance_name"
 
-        # Manual instance creation by writing PolyMC metadata files directly.
+        # Manual instance creation by writing PrismLauncher metadata files directly.
         mkdir -p "$instance_dir" || {
             print_error "Failed to create instance directory: $instance_dir"
             continue
@@ -209,7 +209,7 @@ EOF
 # Install Fabric mod loader and download all selected mods for an instance
 # This function ensures each instance has the proper mod loader and all compatible mods
 # Parameters:
-#   $1 - instance_dir: Path to the PolyMC instance directory
+#   $1 - instance_dir: Path to the PrismLauncher instance directory
 #   $2 - instance_name: Display name of the instance for logging
 #   $3 - preserve_options: Whether to preserve existing options.txt (true/false)
 install_fabric_and_mods() {

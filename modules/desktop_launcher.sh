@@ -24,7 +24,7 @@
 #
 # ICON HIERARCHY:
 # 1. SteamGridDB custom icon (downloaded, professional appearance)
-# 2. PolyMC instance icon (fallback)
+# 2. PrismLauncher instance icon (fallback)
 # 3. System generic icon (ultimate fallback)
 #
 # DESKTOP FILE LOCATIONS:
@@ -60,6 +60,7 @@ create_desktop_launcher() {
         # APPLICATIONS DIRECTORY CREATION: Ensure the applications directory exists
         # This directory is where desktop environments look for user-installed applications
         mkdir -p "$app_dir"
+        mkdir -p "$HOME/Desktop"
         print_info "Desktop file will be created at: $desktop_file_path"
         print_info "Application menu entry will be registered in: $app_dir"
         
@@ -101,8 +102,8 @@ create_desktop_launcher() {
             icon_desktop="$icon_path"  # Best: Custom SteamGridDB icon
             print_info "   → Using custom SteamGridDB icon for consistent branding"
         elif [[ -f "$TARGET_DIR/instances/latestUpdate-1/icon.png" ]]; then
-            icon_desktop="$TARGET_DIR/instances/latestUpdate-1/icon.png"  # Acceptable: PolyMC instance icon
-            print_info "   → Using PolyMC instance icon"
+            icon_desktop="$TARGET_DIR/instances/latestUpdate-1/icon.png"  # Acceptable: PrismLauncher instance icon
+            print_info "   → Using PrismLauncher instance icon"
         else
             icon_desktop="application-x-executable"  # Fallback: Generic system executable icon
             print_info "   → Using system default executable icon"
@@ -112,12 +113,12 @@ create_desktop_launcher() {
         # LAUNCHER SCRIPT PATH CONFIGURATION
         # =============================================================================
         
-        # LAUNCHER SCRIPT PATH: Always point to PolyMC splitscreen script.
+        # LAUNCHER SCRIPT PATH: Always point to PrismLauncher splitscreen script.
         local launcher_script_path
         local launcher_comment
         launcher_script_path="$TARGET_DIR/minecraftSplitscreen.sh"
-        launcher_comment="Launch Minecraft splitscreen with PolyMC"
-        print_info "   → Desktop launcher configured for PolyMC"
+        launcher_comment="Launch Minecraft splitscreen with PrismLauncher"
+        print_info "   → Desktop launcher configured for PrismLauncher"
         
         # =============================================================================
         # DESKTOP ENTRY FILE GENERATION
@@ -142,7 +143,7 @@ create_desktop_launcher() {
 Type=Application
 Name=Minecraft Splitscreen
 Comment=$launcher_comment
-Exec=$launcher_script_path
+Exec="$launcher_script_path"
 Icon=$icon_desktop
 Terminal=false
 Categories=Game;
