@@ -31,17 +31,19 @@ LAUNCH_DEBUG_LOG="$HOME/.local/share/PrismLauncher/splitscreen-launch-debug.log"
 # Detects PrismLauncher launcher for splitscreen gameplay.
 # Returns launcher paths and executable info.
 detectLauncher() {
-    # Check if PrismLauncher is available.
-    if [ -f "$HOME/.local/share/PrismLauncher/PrismLauncher.AppImage" ] && [ -x "$HOME/.local/share/PrismLauncher/PrismLauncher.AppImage" ]; then
-        export LAUNCHER_DIR="$HOME/.local/share/PrismLauncher"
-        export LAUNCHER_EXEC="$HOME/.local/share/PrismLauncher/PrismLauncher.AppImage"
-        export LAUNCHER_NAME="PrismLauncher"
-        return 0
+    export LAUNCHER_DIR="$HOME/.local/share/PrismLauncher"
+    export LAUNCHER_NAME="PrismLauncher"
+    # Match the installer utility's extracted-AppImage preference.
+    if [ -x "$LAUNCHER_DIR/squashfs-root/AppRun" ]; then
+        export LAUNCHER_EXEC="$LAUNCHER_DIR/squashfs-root/AppRun"
+    elif [ -f "$LAUNCHER_DIR/PrismLauncher.AppImage" ] && [ -x "$LAUNCHER_DIR/PrismLauncher.AppImage" ]; then
+        export LAUNCHER_EXEC="$LAUNCHER_DIR/PrismLauncher.AppImage"
+    else
+        echo "[Error] PrismLauncher AppImage or extracted AppRun not found at $LAUNCHER_DIR/" >&2
+        echo "[Error] Please run the Minecraft Splitscreen installer to set up PrismLauncher" >&2
+        return 1
     fi
-    
-    echo "[Error] PrismLauncher not found at $HOME/.local/share/PrismLauncher/" >&2
-    echo "[Error] Please run the Minecraft Splitscreen installer to set up PrismLauncher" >&2
-    return 1
+    return 0
 }
 
 # Detect and set launcher variables at startup
@@ -159,7 +161,7 @@ launchGame() {
     fi
 
     local -a launch_cmd
-    launch_cmd=("$LAUNCHER_EXEC" -l "$instance_name" -a "$account_name")
+    launch_cmd=("$LAUNCHER_EXEC" -d "$LAUNCHER_DIR" -l "$instance_name" -a "$account_name")
 
     # SDL hint used by Controllable's bundled SDL backend. This constrains each process
     # to a single joystick path to reduce cross-instance controller collisions.
