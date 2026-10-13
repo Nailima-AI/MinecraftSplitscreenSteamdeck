@@ -2,6 +2,8 @@
 
 Simple installer for running **Minecraft splitscreen (1–4 players)** on Steam Deck and Linux using **PrismLauncher**.
 
+This installer uses the official Prism AppImage in `~/.local/share/PrismLauncher`, including on Bazzite. It also recognizes an extracted AppImage at `~/.local/share/PrismLauncher/squashfs-root/AppRun`. Launches explicitly use this directory for configuration, accounts and instances. An existing Flatpak Prism install uses `~/.var/app/org.prismlauncher.PrismLauncher/data/PrismLauncher` and is separate; this installer does not use that Flatpak or import its data. The standard native Prism data directory is shared with this AppImage, so back it up before installation or uninstall.
+
 ## What This Does
 - Installs/updates PrismLauncher in `~/.local/share/PrismLauncher`
 - Creates 4 splitscreen instances (`latestUpdate-1` to `latestUpdate-4`)
