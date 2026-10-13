@@ -46,22 +46,6 @@ main() {
     print_info "PrismLauncher launcher setup with manual instance creation"
     print_debug "Debug logging enabled"
     echo ""
-    # Controllable is a required CurseForge mod. Never fetch shared credentials.
-    if [[ -z "${MSS_CURSEFORGE_API_KEY:-}" ]]; then
-        if [[ -t 0 ]]; then
-            read -r -s -p "Your CurseForge API key (input hidden): " MSS_CURSEFORGE_API_KEY || return 1
-            printf '\n'
-        else
-            print_error "Set MSS_CURSEFORGE_API_KEY before installing; required CurseForge mods need your own API key."
-            return 1
-        fi
-    fi
-    if [[ -z "${MSS_CURSEFORGE_API_KEY:-}" ]]; then
-        print_error "A CurseForge API key is required. No shared token is bundled."
-        return 1
-    fi
-    # API functions use the shell variable; do not pass it to unrelated children.
-    export -n MSS_CURSEFORGE_API_KEY
     
     # =============================================================================
     # WORKSPACE INITIALIZATION PHASE
@@ -101,14 +85,16 @@ main() {
     # OFFLINE ACCOUNTS DOWNLOAD: Get splitscreen player account configurations
     # These accounts enable splitscreen without requiring multiple Microsoft accounts
     # Each player (P1, P2, P3, P4) gets a separate offline profile for identification
-    if [[ -s accounts.json ]]; then
-        print_info "Preserving existing account configuration."
-    elif [[ -s "${SCRIPT_DIR}/accounts.json" ]]; then
-        cp -- "${SCRIPT_DIR}/accounts.json" accounts.json
-        chmod 600 accounts.json
+    if ! wget -O accounts.json "https://raw.githubusercontent.com/FlyingEwok/MinecraftSplitscreenSteamdeck/main/accounts.json"; then
+        print_warning "⚠️  Failed to download accounts.json from repository"
+        print_info "   → Attempting to use local copy if available..."
+        if [[ ! -f "accounts.json" ]]; then
+            print_error "❌ No accounts.json found - splitscreen accounts may require manual setup"
+            print_info "   → Splitscreen will still work but players may have generic names"
+        fi
     else
-        print_error "No bundled accounts.json. Extract the complete archive before installing."
-        return 1
+        print_success "✅ Offline splitscreen accounts configured successfully"
+        print_debug "P1, P2, P3, P4 player accounts ready for offline gameplay"
     fi
     
     # =============================================================================

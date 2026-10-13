@@ -12,9 +12,6 @@ get_prism_executable() {
         echo "$TARGET_DIR/squashfs-root/AppRun"
     elif [[ -x "$TARGET_DIR/PrismLauncher.AppImage" ]]; then
         echo "$TARGET_DIR/PrismLauncher.AppImage"
-    elif [[ -x "$TARGET_DIR/PrismLauncher.AppImage" ]]; then
-        # Backward compatibility for existing installs that still use the old filename.
-        echo "$TARGET_DIR/PrismLauncher.AppImage"
     else
         return 1  # No executable found, return failure instead of exiting
     fi

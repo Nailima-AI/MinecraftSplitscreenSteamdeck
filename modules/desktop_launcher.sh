@@ -60,7 +60,6 @@ create_desktop_launcher() {
         # APPLICATIONS DIRECTORY CREATION: Ensure the applications directory exists
         # This directory is where desktop environments look for user-installed applications
         mkdir -p "$app_dir"
-        mkdir -p "$HOME/Desktop"
         print_info "Desktop file will be created at: $desktop_file_path"
         print_info "Application menu entry will be registered in: $app_dir"
         
@@ -143,7 +142,7 @@ create_desktop_launcher() {
 Type=Application
 Name=Minecraft Splitscreen
 Comment=$launcher_comment
-Exec="$launcher_script_path"
+Exec=$launcher_script_path
 Icon=$icon_desktop
 Terminal=false
 Categories=Game;
