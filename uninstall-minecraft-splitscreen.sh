@@ -11,16 +11,16 @@ KEEP_DATA=false
 MODE_EXPLICIT=false
 
 FULL_TARGETS=(
-    "$HOME/.local/share/minecraft-splitscreen/PrismLauncher"
+    "$HOME/.local/share/PrismLauncher"
     "$HOME/Desktop/MinecraftSplitscreen.desktop"
     "$HOME/.local/share/applications/MinecraftSplitscreen.desktop"
 )
 
 KEEP_DATA_TARGETS=(
-    "$HOME/.local/share/minecraft-splitscreen/PrismLauncher/PrismLauncher.AppImage"
-    "$HOME/.local/share/minecraft-splitscreen/PrismLauncher/minecraftSplitscreen.sh"
-    "$HOME/.local/share/minecraft-splitscreen/PrismLauncher/live.check"
-    "$HOME/.local/share/minecraft-splitscreen/PrismLauncher/PrismLauncher-*.log"
+    "$HOME/.local/share/PrismLauncher/PrismLauncher.AppImage"
+    "$HOME/.local/share/PrismLauncher/minecraftSplitscreen.sh"
+    "$HOME/.local/share/PrismLauncher/live.check"
+    "$HOME/.local/share/PrismLauncher/PrismLauncher-*.log"
     "$HOME/Desktop/MinecraftSplitscreen.desktop"
     "$HOME/.local/share/applications/MinecraftSplitscreen.desktop"
 )
@@ -109,9 +109,9 @@ fi
 echo ""
 
 if [[ "$KEEP_DATA" == true ]]; then
-    print_info "Data under ~/.local/share/minecraft-splitscreen/PrismLauncher/instances and ~/.local/share/minecraft-splitscreen/PrismLauncher/accounts.json will be preserved."
+    print_info "Data under ~/.local/share/PrismLauncher/instances and ~/.local/share/PrismLauncher/accounts.json will be preserved."
 else
-    print_warning "This removes the dedicated splitscreen data only. Normal Prism Launcher installations are not touched."
+    print_warning "This can remove your local instances, mods, and worlds in PrismLauncher."
 fi
 print_info "Steam library shortcuts are not edited automatically."
 print_info "If needed, remove the Steam shortcut manually from Steam."

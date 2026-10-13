@@ -13,8 +13,6 @@ import re
 import struct
 import zlib
 import urllib.request
-import tempfile
-from pathlib import Path
 
 # --- Config: Set up paths and app info dynamically for the current user ---
 HOME = os.path.expanduser("~")  # Get the current user's home directory
@@ -23,11 +21,11 @@ APPNAME  = "Minecraft Splitscreen"  # Name as it will appear in Steam
 # Detect PrismLauncher paths for splitscreen gameplay.
 def detect_launcher():
     """Detect PrismLauncher launcher for splitscreen gameplay."""
-    launcher_path = f"{HOME}/.local/share/minecraft-splitscreen/PrismLauncher/PrismLauncher.AppImage"
-    launcher_script = f"{HOME}/.local/share/minecraft-splitscreen/PrismLauncher/minecraftSplitscreen.sh"
+    launcher_path = f"{HOME}/.local/share/PrismLauncher/PrismLauncher.AppImage"
+    launcher_script = f"{HOME}/.local/share/PrismLauncher/minecraftSplitscreen.sh"
 
     if os.path.exists(launcher_script):
-        return launcher_script, f"{HOME}/.local/share/minecraft-splitscreen/PrismLauncher", "PrismLauncher"
+        return launcher_script, f"{HOME}/.local/share/PrismLauncher", "PrismLauncher"
 
     if os.path.exists(launcher_path) and os.access(launcher_path, os.X_OK):
         print("❌ Error: PrismLauncher was found, but minecraftSplitscreen.sh is missing.")
@@ -54,40 +52,21 @@ STEAMGRIDDB_IMAGES = {
 
 # --- Locate Steam shortcuts file for the current user ---
 userdata = os.path.expanduser("~/.steam/steam/userdata")  # Steam userdata directory
-user_ids = sorted(d for d in os.listdir(userdata) if d.isdigit() and os.path.isdir(os.path.join(userdata, d)))
-user_id = os.environ.get("MSS_STEAM_USER_ID")
-if user_id and user_id not in user_ids:
-    raise SystemExit("MSS_STEAM_USER_ID does not match an existing Steam userdata directory.")
-if not user_id and len(user_ids) > 1:
-    raise SystemExit("Multiple Steam users found. Set MSS_STEAM_USER_ID to the intended userdata directory name.")
-user_id = user_id or (user_ids[0] if user_ids else None)
+user_id = next((d for d in os.listdir(userdata) if d.isdigit()), None)  # Find the first numeric user ID
 if not user_id:
     print("❌ No Steam user found.")
     exit(1)
 config_dir = os.path.join(userdata, user_id, "config")  # Path to config directory
 shortcuts_file = os.path.join(config_dir, "shortcuts.vdf")  # Path to shortcuts.vdf
-os.makedirs(config_dir, exist_ok=True)
-# A running client can overwrite changes. Do not modify another user's session.
-for process in Path("/proc").iterdir():
-    if not process.name.isdigit():
-        continue
-    try:
-        if process.stat().st_uid == os.getuid() and (process / "comm").read_text().strip() == "steam":
-            raise SystemExit("Steam is still running. Close it before adding the shortcut.")
-    except (OSError, UnicodeError):
-        continue
 
 # --- Ensure shortcuts.vdf exists (create if missing) ---
-if os.path.exists(shortcuts_file):
-    with open(shortcuts_file, "rb") as f:
-        data = f.read()
-else:
-    data = b'\x00shortcuts\x00\x08\x08'
-if not data.startswith(b'\x00shortcuts\x00') or not data.endswith(b'\x08\x08'):
-    raise SystemExit("Unrecognized shortcuts.vdf structure; no changes made.")
-if EXE.encode() in data:
-    print("This launch script already appears in shortcuts.vdf; leaving it unchanged.")
-    raise SystemExit(0)
+if not os.path.exists(shortcuts_file):
+    with open(shortcuts_file, "wb") as f:
+        f.write(b'\x00shortcuts\x00\x08\x08')  # Write empty VDF structure
+
+# --- Read current shortcuts.vdf into memory ---
+with open(shortcuts_file, "rb") as f:
+    data = f.read()
 
 def get_latest_index(data):
     """
@@ -96,7 +75,7 @@ def get_latest_index(data):
     """
     matches = re.findall(rb'\x00(\d+)\x00', data)
     if matches:
-        return max(map(int, matches))
+        return int(matches[-1])
     return -1
 
 # --- Determine the next shortcut index ---
@@ -127,29 +106,14 @@ def make_entry(index, appid, appname, exe, startdir):
     return b
 
 # --- Generate a unique appid for the shortcut (matches Steam's logic) ---
-quoted_exe = f'"{EXE}"'
-appid = (zlib.crc32((quoted_exe + APPNAME).encode("utf-8")) | 0x80000000) & 0xFFFFFFFF
-entry = make_entry(index, appid, APPNAME, quoted_exe, f'"{STARTDIR}"')
+appid = 0x80000000 | zlib.crc32((APPNAME + EXE).encode("utf-8")) & 0xFFFFFFFF
+entry = make_entry(index, appid, APPNAME, EXE, STARTDIR)
 
 # --- Insert the new shortcut entry before the last two \x08 bytes (end of VDF) ---
 if data.endswith(b'\x08\x08'):
     new_data = data[:-2] + entry + b'\x08\x08'
-    # Retain a unique backup, then atomically replace within the same filesystem.
-    if os.path.exists(shortcuts_file):
-        backup_fd, backup = tempfile.mkstemp(prefix="shortcuts.vdf.backup-", dir=config_dir)
-        with os.fdopen(backup_fd, "wb") as f:
-            f.write(data)
-        print(f"Shortcut backup: {backup}")
-    temp_fd, temporary = tempfile.mkstemp(prefix=".shortcuts-", dir=config_dir)
-    try:
-        with os.fdopen(temp_fd, "wb") as f:
-            f.write(new_data)
-            f.flush()
-            os.fsync(f.fileno())
-        os.replace(temporary, shortcuts_file)
-    finally:
-        if os.path.exists(temporary):
-            os.unlink(temporary)
+    with open(shortcuts_file, "wb") as f:
+        f.write(new_data)
     print(f"✅ Minecraft shortcut added with index {index} and appid {appid}")
 else:
     print("❌ File structure not recognized. No changes made.")
@@ -168,7 +132,7 @@ for suffix, url in STEAMGRIDDB_IMAGES.items():
     try:
         print(f"Downloading: {url}")
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=30) as resp, open(path, "wb") as out:
+        with urllib.request.urlopen(req) as resp, open(path, "wb") as out:
             out.write(resp.read())
         print(f"✅ Saved {suffix} image.")
     except Exception as e:

@@ -22,13 +22,7 @@
 #
 # =============================================================================
 
-set -Eeuo pipefail
-umask 077
-INSTALL_LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/minecraft-splitscreen/install-$(date -u +%Y%m%dT%H%M%SZ)-$$"
-mkdir -p -- "$INSTALL_LOG_DIR"
-exec > >(tee -a "$INSTALL_LOG_DIR/installer.log") 2>&1
-trap 'printf "%s installer_error source=%s line=%s rc=%s\n" "$(date -u +%FT%TZ)" "${BASH_SOURCE[0]##*/}" "$LINENO" "$?" >&2' ERR
-echo "[Info] Installation log: $INSTALL_LOG_DIR/installer.log"
+set -euo pipefail  # Exit on error, undefined vars, pipe failures
 
 # Runtime flags
 DEBUG_MODE=false
@@ -56,18 +50,14 @@ MODULES_DIR=""
 
 # Cleanup function to remove temporary modules directory
 cleanup() {
-    local rc=$?
     if [[ -n "$MODULES_DIR" ]] && [[ -d "$MODULES_DIR" ]]; then
         echo "🧹 Cleaning up temporary modules..."
         rm -rf "$MODULES_DIR"
     fi
-    printf '%s installer_exit rc=%s\n' "$(date -u +%FT%TZ)" "$rc"
 }
 
 # Set up trap to cleanup on script exit (normal or error)
-trap cleanup EXIT
-trap 'exit 130' INT
-trap 'exit 143' TERM
+trap cleanup EXIT INT TERM
 
 # =============================================================================
 # MODULE DOWNLOADING AND LOADING
@@ -79,8 +69,7 @@ readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODULES_DIR="$(mktemp -d -t minecraft-modules-XXXXXX)"
 
 # GitHub repository information (modify these URLs to match your actual repository)
-readonly MSS_REPO_SLUG="${MSS_REPO_SLUG:-Nailima-AI/MinecraftSplitscreenSteamdeck}"
-readonly REPO_BASE_URL="https://raw.githubusercontent.com/${MSS_REPO_SLUG}/main/modules"
+readonly REPO_BASE_URL="https://raw.githubusercontent.com/Nailima-AI/MinecraftSplitscreenSteamdeck/main/modules"
 
 # List of required module files
 readonly MODULE_FILES=(
@@ -196,8 +185,7 @@ if [[ -d "$SCRIPT_DIR/modules" ]]; then
         echo "✅ Copied local modules to temporary directory"
     fi
 else
-    echo '[Error] This experimental build requires the complete extracted archive, including modules/.' >&2
-    exit 1
+    download_modules
 fi
 
 # Verify all modules are now present
@@ -228,7 +216,7 @@ source "$MODULES_DIR/main_workflow.sh"
 # =============================================================================
 
 # Script configuration paths
-readonly TARGET_DIR="$HOME/.local/share/minecraft-splitscreen/PrismLauncher"
+readonly TARGET_DIR="$HOME/.local/share/PrismLauncher"
 
 # Runtime variables (set during execution)
 JAVA_PATH=""

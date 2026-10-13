@@ -1,54 +1,14 @@
 # Minecraft Splitscreen Steam Deck & Linux Installer
 
-> Experimental **Prism Launcher** build for Bazzite GNOME HTPC. Start with
-> [TESTING.md](TESTING.md) for installation, known limitations and debug collection.
-> No real Minecraft/compositor/controller testing has been performed for this revision.
-
-## AI-generated code disclaimer
-
-Changes introduced in this fork were generated and modified with AI assistance (OpenAI Codex). They received static review and syntax checks, but have not been validated through real Minecraft, compositor or controller testing. Review the code and follow [TESTING.md](TESTING.md) before relying on this experimental build. This notice applies to this fork's changes, not to the original upstream project's authorship.
-
-Development fork: [Nailima-AI/MinecraftSplitscreenSteamdeck](https://github.com/Nailima-AI/MinecraftSplitscreenSteamdeck).
-Download or clone the complete repository; the experimental installer requires its bundled modules.
-CurseForge-backed mods require your own API key. The installer prompts with hidden
-input, or accepts `MSS_CURSEFORGE_API_KEY`; shared encrypted credentials are not bundled.
-
-Simple installer for running **Minecraft splitscreen (1–4 players)** on Steam Deck, Bazzite HTPC and Linux using **PrismLauncher**.
+Simple installer for running **Minecraft splitscreen (1–4 players)** on Steam Deck and Linux using **PrismLauncher**.
 
 ## What This Does
-- Installs/updates PrismLauncher in `~/.local/share/minecraft-splitscreen/PrismLauncher`
+- Installs/updates PrismLauncher in `~/.local/share/PrismLauncher`
 - Creates 4 splitscreen instances (`latestUpdate-1` to `latestUpdate-4`)
 - Installs Fabric and required splitscreen mods
 - Lets you choose optional compatible mods
 - Lets you add custom Modrinth/CurseForge mods with compatibility checks
 - Optionally adds launchers to Steam and desktop
-- Detects generic Gamescope sessions instead of requiring Steam Deck hardware
-- Uses nested Mutter automatically on Bazzite GNOME HTPC
-
-## Bazzite GNOME HTPC
-
-Install the `bazzite-deck-gnome`/HTPC image so Steam Gaming Mode is available. Run the installer from GNOME Desktop Mode, enable Steam integration, connect all controllers, then launch **Minecraft Splitscreen** from Gaming Mode.
-
-The launcher detects Bazzite's Gamescope session without depending on a Steam Deck product name or the `deck` username. The experimental GNOME backend attempts a nested Mutter compositor at the current output resolution and routes Minecraft to its Xwayland display. It does not install KDE or layer packages. The standalone `mutter` executable and Xwayland must already be available; GNOME's Mutter library alone is insufficient. See TESTING.md for unverified compatibility areas.
-
-Diagnostics:
-
-```sh
-~/.local/share/minecraft-splitscreen/PrismLauncher/minecraftSplitscreen.sh --diagnose
-```
-
-Optional overrides:
-
-```sh
-# Force the Bazzite GNOME backend
-MSS_COMPOSITOR=mutter ~/.local/share/minecraft-splitscreen/PrismLauncher/minecraftSplitscreen.sh
-
-# Override output size if Gamescope does not report it correctly
-MSS_RESOLUTION=3840x2160 ~/.local/share/minecraft-splitscreen/PrismLauncher/minecraftSplitscreen.sh
-
-# Bypass nesting for troubleshooting in Desktop Mode
-MSS_COMPOSITOR=direct ~/.local/share/minecraft-splitscreen/PrismLauncher/minecraftSplitscreen.sh
-```
 
 ## Core Mods (Required)
 - [Controllable](https://www.curseforge.com/minecraft/mc-mods/controllable)
@@ -77,8 +37,9 @@ No manual Java setup is required. The installer detects and installs the needed 
 
 ## Install
 ```sh
-# Run from the complete extracted archive, not the upstream installer.
-bash install-minecraft-splitscreen.sh --debug
+wget https://raw.githubusercontent.com/Nailima-AI/MinecraftSplitscreenSteamdeck/main/install-minecraft-splitscreen.sh
+chmod +x install-minecraft-splitscreen.sh
+./install-minecraft-splitscreen.sh
 ```
 
 ### Debug Mode
@@ -116,15 +77,15 @@ If a custom mod is incompatible, you can choose to switch versions and the insta
 ## Launching
 After install, run:
 ```sh
-~/.local/share/minecraft-splitscreen/PrismLauncher/minecraftSplitscreen.sh
+~/.local/share/PrismLauncher/minecraftSplitscreen.sh
 ```
 
 You can also launch from Steam or desktop if you enabled those integrations.
 
 ## Install Locations
-- Main directory: `~/.local/share/minecraft-splitscreen/PrismLauncher/`
-- Splitscreen launcher: `~/.local/share/minecraft-splitscreen/PrismLauncher/minecraftSplitscreen.sh`
-- Instances: `~/.local/share/minecraft-splitscreen/PrismLauncher/instances/`
+- Main directory: `~/.local/share/PrismLauncher/`
+- Splitscreen launcher: `~/.local/share/PrismLauncher/minecraftSplitscreen.sh`
+- Instances: `~/.local/share/PrismLauncher/instances/`
 
 ## Updating
 Re-run the installer anytime:
@@ -136,11 +97,13 @@ The installer updates instance configs and mods for the version you select, whil
 
 ## TODO
 - Explore an optional "fast launch mode" for Steam Deck that reduces startup delays where possible while keeping the current reliable default behavior unchanged.
-- Validate additional non-Bazzite GNOME distributions and unusual multi-monitor layouts.
+- Investigate cross-desktop-environment fullscreen handling (GNOME and others), potentially via an optional nested-session launch mode to avoid taskbars/panels overlapping lower splitscreen instances. Idea: evaluate a lightweight nested tiling DE/compositor approach for more consistent fullscreen splits.
 
 ## Uninstall
 ```sh
-bash uninstall-minecraft-splitscreen.sh --keep-data
+wget https://raw.githubusercontent.com/Nailima-AI/MinecraftSplitscreenSteamdeck/main/uninstall-minecraft-splitscreen.sh
+chmod +x uninstall-minecraft-splitscreen.sh
+./uninstall-minecraft-splitscreen.sh
 ```
 
 Optional uninstall flags:
